@@ -144,3 +144,26 @@ ou então
 
 nome.forEach(o -> System.out.println(o))
 
+//Para adicionar elementos à lista que armazena o registro, pode-se utilizar:
+
+nomeLista.get(0).add(elemento);
+
+//Para limitar um determinado número de registros de acordo com a necessidade, pode-se criar um método na classe "Pai":
+
+ public void addElemento(Elemento elemento){
+        if (this.elemento.size() < limite){
+            this.elemento.add(elemento);
+        }else {
+            System.out.println("Limite atingido.");
+        }
+    }
+
+//Para limitar os registros logo na instância do objeto e da criação de novos elementos sem exceder o limite, basta alterar o setter do elemento da classe "Pai" que será adicionado.
+
+public void setElemento(List<Elemento> elementos) {
+        if (elementos.size() > limite)
+            System.out.println("Limite excedido. Este bloco possui como limite " + this.limite);
+        else
+            this.elementos = elementos;
+    }
+
