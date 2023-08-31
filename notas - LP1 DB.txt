@@ -1,0 +1,146 @@
+Persistência é a qualidade que um sistema possui de reter dados e armazená-los em algum mecanismo para usos futuros.
+
+JDBC - Java Database Connectivity
+
+Aplicação Java/JDBC -> SGBD
+
+MAPEAMENTO DE CLASSES:
+-As anotações descrevem o mapeamento objeto-relacional
+-Definem as regras de associação entre a entidade e atabela correspondente, onde serão armazenadas.
+-Definem também o relacionamento entre as entidades.
+
+ABORDAGENS:
+-Top Down: Das classes de entidade (anotadas com JPA) para o esquema do BDD
+
+-Bottom-Up: Do esquema do BDD para a geração das classes de entidade (anotadas com JPA)
+
+IMPLEMENTAÇÕES:
+-Hibernate
+-TopLink
+-Outra
+
+DRIVERS JDBC:
+-HSQL: org.hsqidb.jdbc.Driver
+-MySQL: com.mysql.jdbc.Driver
+-Postgres: org.postgresql.Driver
+
+MAPEAMENTO BÁSICO
+- @Entity: Torna a classe uma entidade visível ao ENtitymanager
+- @Table: Define a tabela de armazenamento, caso seja necessário
+- @Id: Identifica a propriedade que representa a chave primária da tabela.
+
+- @GeneratedValue: Indica a forma de geração automática do valor atribute
+-(default) Generation Type.AUTO (de acordo com o SGBD)
+. De acordo com a configuração da tabela no BD 
+
+-Generation Type.IDENTITY (auto increment)
+. Não funciona em todos os SGBD
+
+-Generation Type.SEQUENCE
+. Auto-incremento em uma sequência específica
+. Pode-se passar o nome da sequência, caso não informado, usa uma sequência global
+. A sequência pode ser compartilhada por mais de uma entidade. Não repetirá o valor entre elas
+. Não funciona em todos os SGBDs
+
+-Generation Type.TABLE (valores em uma tabela)
+. Não é recomendada. Pode gerar sobrecarga de consultas
+. @SequenceGenerator {name="sequence_name", sequenceName="nome_no_sgbd"}
+
+@Column: Configura o nome da coluna em que será armazenada a propriedade.
+
+@Lob: Usada para armazenar tipos grandes com imagens ou textos. Mapeia propriedades: java.sql.Blob(binartos) e java.sql.Clob(caracteres).
+
+@Transient: Define uma propiredade que não será armazenada.
+
+MAPEAMENTO BÁSICO (OBSERVAÇÕES)
+
+OBS1: O Hibernate utiliza o construtor padrão para isntanciar as entidades
+
+OBS2: Em caso de chave composta (múltiplas anotações @Id), é necessário:
+.Implementar a interface Serializable
+.E é desejável:
+	.Redefinir o método equals
+	.Redefinir o método hashCode
+
+
+MAPEAMENTO DE ASSOCIAÇÕES
+
+-De um dos lados:
+. @OneToOne/ @OneToMany / @ManyToMany (mapppedBy = "nome")
+
+-Do outro lado:
+.@OneToOne / @ManyToOne
+	-@JoinColumn (name = "nome_chave_estrangeira, referencedColumnName = "nome_atributo_chave")
+.@ManyToMany
+@JoinTable (name = "nome_tabela", joinColumns = {@JoinColumns (name = "chave_estrangeira_classe_atual", nullable = false, updatable = false) }, inverseJoinColumns = {@JoinColumn (name = "chave_estrangeira_classe_atributo", nullable = false, updatable = false ) })
+
+OBS:Os atributos nullable e updatable são opcionais
+
+MAPEAMENTO DE ASSOCIAÇÕES:
+
+-Principais Parâmetros (opcionais):
+.fetch = FetchType.LAZY (default) OU FetchType.EAGER
+.cascade = CascadeType.***
+.ALL = Realiza todas as operações em cascata
+.DETACH = Realiza a operação detach em cascata
+.MERGE = Realiza a operação merge em cascata
+.PERSIST = Realiza a operação persist em cascata
+.REFRESH = Realiza a operação refresh em cascata
+.REMOVE = Realiza a operação remove em cascata
+
+MAPEAMENTO DE HERANÇA
+ 
+Há 3 estratégias de mapeamento:
+-Uma única tabela
+-Uma tabela para cada classe concreta
+-Uma tabela pra cada classe
+
+Tabela Única 
+- É gerado 1 tabela para toda a hierarquia de classes. Unindo todos os atributos das classes em uma única tabela.
+
+- A divisão das classes é feita através de um atributo chamado discriminator.
+
+Tabela por Classe Concreta
+
+-Define que apenas as classes concretas geram suas respectivas tabelas, ou seja, classes abstratas não tem tabelas.
+
+Tabela para Cada Classe 
+
+-Nessa estratégia nós teremos a Classe Pai e todas suas filhas geradas no banco de dados fisicamente, sendo que em todas as classes filhas teremos uma chave estrangeira que apontará para a classe pai.
+
+SESSÕES - TRANSAÇÕES
+
+//Inicializando e abrindo uma sessão
+Session session = HibernateUtil.getSessionFactory().openSession();
+
+//Começando uma transação para armazenar os dados no banco
+        Transaction transaction = session.beginTransaction();
+
+//Comando de armazenamento de dados no banco (persist)
+        session.persist(viagem);
+
+//Fechamento da transação
+        transaction.commit();
+
+BUSCANDO ELEMENTOS DE UM BANCO DE DADOS
+
+//Para buscar elementos de um banco de dados  é necessária a criação de uma lista
+//O comando .list converte a lista de sessão para uma lista, e realiza a busca e armazenamento dos registros na variável criada
+List <Obj> nome = session.createQuery("from Obj", Obj.class).list();
+
+//Para percorrer e exibir os registros do banco de dados, pode-se usar um laço fori
+//Nesse laço, utiliza-se uma variável auxiliar i para percorrer a lista nome, tendo como limite o tamanho da lista
+for (int i = 0; i < nome.size(); i++) {
+            System.out.println(nome.get(i));
+        }
+
+//Pode-se utilizar também um laço for each, mais simples, exemplo:
+
+for (Obj o: nome){
+System.out.println(o)
+}
+
+ou então 
+
+nome.forEach(o -> System.out.println(o))
+
